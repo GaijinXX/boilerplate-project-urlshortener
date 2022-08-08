@@ -28,7 +28,7 @@ let arr = [];
 app.post('/api/shorturl', function(req, res) {
   let origurl = req.body.url;
   dns.lookup(url.parse(origurl).host, (err, address, family) => {
-    if(err) {
+    if(err || !url.parse(origurl).host) {
       res.json({ error: 'invalid url' });
     }
     else {
