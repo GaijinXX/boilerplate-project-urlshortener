@@ -29,8 +29,8 @@ let arr = [];
 mongoose.connect('mongodb+srv://gaijin:killer01@cluster0.kfo2p.mongodb.net/shorturl?retryWrites=true&w=majority');
 
 const UrlSchema = new mongoose.Schema({
-  shortUrl: {type: String, required: true},
-  originalUrl: {type: String, required: true},
+  short_url: {type: String, required: true},
+  original_url: {type: String, required: true},
 });
 
 const Url = mongoose.model('Url', UrlSchema);
@@ -45,7 +45,7 @@ app.post('/api/shorturl', async function(req, res) {
       res.json({ error: 'invalid url' });
     }
     else {
-      let url = new Url({shortUrl: (await Url.countDocuments({}) + 1), originalUrl: origurl});
+      let url = new Url({short_url: (await Url.countDocuments({}) + 1), original_url: origurl});
       res.json(url);
       url.save();
     }
@@ -53,7 +53,7 @@ app.post('/api/shorturl', async function(req, res) {
 });
 
 app.get('/api/shorturl/:shorturl', async function(req, res) {
-  res.redirect((await Url.findOne({shortUrl: req.params.shorturl})).originalUrl);
+  res.redirect((await Url.findOne({short_url: req.params.shorturl})).original_url);
 });
 
 app.listen(port, function() {
