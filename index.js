@@ -4,6 +4,7 @@ const cors = require('cors');
 const app = express();
 const dns = require('dns');
 const url = require('url');
+const mongoose = require("mongoose");
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -25,21 +26,34 @@ app.get('/api/hello', function(req, res) {
 
 let arr = [];
 
-app.post('/api/shorturl', function(req, res) {
+mongoose.connect('mongodb+srv://gaijin:killer01@cluster0.kfo2p.mongodb.net/shorturl?retryWrites=true&w=majority');
+
+const UrlSchema = new mongoose.Schema({
+  shortUrl: {type: String, required: true},
+  originalUrl: {type: String, required: true},
+});
+
+const Url = mongoose.model('Url', UrlSchema);
+
+app.post('/api/shorturl', async function(req, res) {
+  console.log(await Url.countDocuments({}));
   let origurl = req.body.url;
-  dns.lookup(url.parse(origurl).host, (err, address, family) => {
+  
+
+  dns.lookup(url.parse(origurl).host, async (err, address, family) => {
     if(err || !url.parse(origurl).host) {
       res.json({ error: 'invalid url' });
     }
     else {
-      let shorturl = arr.push(origurl) - 1;
-      res.json({ original_url: origurl, short_url: shorturl });
+      let url = new Url({shortUrl: (await Url.countDocuments({}) + 1), originalUrl: origurl});
+      res.json(url);
+      url.save();
     }
   });
 });
 
-app.get('/api/shorturl/:shorturl', function(req, res) {
-  res.redirect(arr[Number(req.params.shorturl)]);
+app.get('/api/shorturl/:shorturl', async function(req, res) {
+  res.redirect((await Url.findOne({shortUrl: req.params.shorturl})).originalUrl);
 });
 
 app.listen(port, function() {
